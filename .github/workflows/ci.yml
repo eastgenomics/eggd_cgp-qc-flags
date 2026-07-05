@@ -1,0 +1,11 @@
+name: ci
+on: [push, pull_request]
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate dxapp.json
+        run: python3 -c "import json; json.load(open('dxapp.json')); print('dxapp.json OK')"
+      - name: Shell syntax check
+        run: bash -n src/*.sh

@@ -7,11 +7,14 @@
 #   FLAT_GENOME       diploidProportion > 0.85 (weak CN signal, purity anchor uncertain)
 #   WIDE_CI           maxPurity - minPurity > 0.40 (wide confidence interval)
 #   NO_TUMOR_BESTFIT  status=NO_TUMOR → surfaces best-fit purity from range TSV
-#   CUPPA_DISCORDANT  cuppa top-1 prediction conflicts with low CUP flag (informational)
 #   LOW_SNV_COUNT     total allocated SNVs < 50 (SIGS/CUPpa SNV features unreliable)
-set -eo pipefail
+set -euo pipefail
 
 main() {
+    case "${sample_id}" in
+        *[!A-Za-z0-9._-]* | "" | .* | -* )
+            echo "ERROR: unsafe sample_id '${sample_id}' (allowed: A-Za-z0-9._-, no leading '-'/'.')" >&2; exit 1 ;;
+    esac
     echo "====================================================="
     echo " eggd_cgp-qc-flags: QC flag generation"
     echo " Sample  : ${sample_id}"
@@ -21,8 +24,10 @@ main() {
     dx download "${purity_tsv}"       -o purity.tsv
     dx download "${purity_range_tsv}" -o purity_range.tsv
 
-    [[ -n "${sigs_allocation:-}" ]]  && dx download "${sigs_allocation}" -o sigs.tsv  || touch sigs.tsv
-    [[ -n "${cup_summary:-}" ]]      && dx download "${cup_summary}"     -o cuppa.tsv || touch cuppa.tsv
+    # Explicit branches: absent optional inputs are allowed (empty stub), but a FAILED
+    # download of a supplied input must abort under set -e (not fall through to touch).
+    if [[ -n "${sigs_allocation:-}" ]]; then dx download "${sigs_allocation}" -o sigs.tsv; else touch sigs.tsv; fi
+    if [[ -n "${cup_summary:-}" ]]; then dx download "${cup_summary}" -o cuppa.tsv; else touch cuppa.tsv; fi
 
     echo "[2/4] Computing QC flags..."
     python3 - "${sample_id}" purity.tsv purity_range.tsv sigs.tsv cuppa.tsv << 'PYEOF'
@@ -76,6 +81,8 @@ bestfit_purity = None
 bestfit_ploidy = None
 if status == 'NO_TUMOR':
     flags.append('NO_TUMOR_BESTFIT')
+    # For NO_TUMOR the range TSV is required to recover a best fit; a parse/empty failure
+    # must abort rather than emit a 'successful' report with blank bestfit_* columns.
     try:
         with open(range_file) as f:
             rdr = csv.DictReader(f, delimiter='\t')
@@ -86,7 +93,8 @@ if status == 'NO_TUMOR':
             info['bestfit_ploidy'] = f"{bestfit_ploidy:.3f}"
             info['bestfit_score']  = best_row.get('score', 'N/A')
     except Exception as e:
-        info['bestfit_error'] = str(e)
+        print(f"ERROR: NO_TUMOR best-fit recovery failed from {range_file}: {e}", file=sys.stderr)
+        sys.exit(1)
 
 # ── 3. SIGS — check SNV count ─────────────────────────────────────────────
 total_snvs = 0
@@ -130,7 +138,7 @@ print(f"  Ploidy    : {info['ploidy']}")
 print(f"  Status    : {info['status']}")
 print(f"  WGD       : {info['wgd']}")
 print(f"  DipProp   : {info['dip_prop']}")
-if bestfit_purity:
+if bestfit_purity is not None:
     print(f"  BestFit   : purity={info['bestfit_purity']} ploidy={info['bestfit_ploidy']}")
 print(f"  SNVs      : {info.get('total_snvs','N/A')}")
 print(f"  CUPpa     : {info.get('cuppa_top1','N/A')} (p={info.get('cuppa_prob1','N/A')})")
