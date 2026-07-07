@@ -73,6 +73,18 @@ class TestPass:
         rows = list(csv.DictReader(out.open(), delimiter='\t'))
         assert len(rows[0]) == 16
 
+    def test_output_column_order(self, tmp_path):
+        """Fixed report schema — column names and order are part of the app contract."""
+        _, _, out = run(tmp_path)
+        with out.open() as f:
+            header = f.readline().rstrip('\n').split('\t')
+        expected = [
+            'sample_id', 'flags', 'purity', 'ploidy', 'status', 'wgd', 'diploidProportion',
+            'ci_width', 'bestfit_purity', 'bestfit_ploidy', 'bestfit_score',
+            'total_snvs', 'cuppa_top1', 'cuppa_prob1', 'cuppa_top2', 'cuppa_prob2',
+        ]
+        assert header == expected
+
 
 # ── Individual flags ──────────────────────────────────────────────────────────
 
@@ -145,6 +157,21 @@ class TestFlags:
         """Zero SNVs = absent/empty sigs file, not flagged as LOW_SNV_COUNT."""
         flags, _, _ = run(tmp_path)
         assert 'LOW_SNV_COUNT' not in flags
+
+    def test_cuppa_pass_through(self, tmp_path):
+        """dna_combined row is parsed and its top-1/top-2 predictions appear in the report."""
+        cuppa_text = (
+            'clf_name\tpred_class_1\tpred_prob_1\tpred_class_2\tpred_prob_2\n'
+            'dna_combined\tBreast\t0.82\tLung\t0.11\n'
+        )
+        flags, info, out = run(tmp_path, cuppa_text=cuppa_text)
+        assert info['cuppa_top1']  == 'Breast'
+        assert info['cuppa_prob1'] == '0.820'
+        assert info['cuppa_top2']  == 'Lung'
+        assert info['cuppa_prob2'] == '0.110'
+        rows = list(csv.DictReader(out.open(), delimiter='\t'))
+        assert rows[0]['cuppa_top1']  == 'Breast'
+        assert rows[0]['cuppa_prob1'] == '0.820'
 
     def test_multiple_flags_combined(self, tmp_path):
         """Sample below purity floor AND with WGD raises both flags."""
