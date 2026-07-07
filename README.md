@@ -9,7 +9,12 @@ Reads `*.purple.purity.tsv` (+ `.purple.purity.range.tsv` for `NO_TUMOR`) and em
 `NO_TUMOR_BESTFIT`, `LOW_SNV_COUNT`.
 
 ## Inputs
-`sample_id`, `purity_tsv`, `purity_range_tsv` (+ optional `sigs_allocation`, `cup_summary` — unlinked in v0.1).
+
+- `sample_id` — sample identifier string (workflow input)
+- `purity_tsv` — `*.purple.purity.tsv` from `eggd_cgp-purple`; required
+- `purity_range_tsv` — `*.purple.purity.range.tsv` from `eggd_cgp-purple`; required
+- `sigs_allocation` — `*.sig.allocation.tsv` from `cgp-sigs`; optional — drives `LOW_SNV_COUNT` flag (unlinked in v0.1)
+- `cup_summary` — `*.cuppa.pred_summ.tsv` from `cgp-cuppa`; optional — top predictions carried through to QC report (unlinked in v0.1)
 
 ## Outputs
 `qc_report` (`{sample_id}.qc_report.tsv`, 16 columns) → purple_plotter.

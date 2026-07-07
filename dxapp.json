@@ -7,11 +7,16 @@
   "developers": ["org-emee_1"],
   "authorizedUsers": ["org-emee_1"],
   "inputSpec": [
-    {"name": "sample_id",        "class": "string", "label": "Sample ID"},
-    {"name": "purity_tsv",       "class": "file",   "label": "*.purple.purity.tsv from eggd_cgp-purple"},
-    {"name": "purity_range_tsv", "class": "file",   "label": "*.purple.purity.range.tsv from eggd_cgp-purple"},
-    {"name": "sigs_allocation",  "class": "file",   "label": "*.sig.allocation.tsv from cgp-sigs", "optional": true},
-    {"name": "cup_summary",      "class": "file",   "label": "*.cuppa.pred_summ.tsv from cgp-cuppa", "optional": true}
+    {"name": "sample_id",        "class": "string", "label": "Sample ID",
+     "help": "Sample identifier string. Must contain only A-Za-z0-9._- and must not begin with a dot or hyphen."},
+    {"name": "purity_tsv",       "class": "file",   "label": "*.purple.purity.tsv from eggd_cgp-purple",
+     "help": "PURPLE purity summary (*.purple.purity.tsv) produced by eggd_cgp-purple. Contains one data row with purity, ploidy, status, WGD, and confidence-interval fields."},
+    {"name": "purity_range_tsv", "class": "file",   "label": "*.purple.purity.range.tsv from eggd_cgp-purple",
+     "help": "PURPLE purity range grid (*.purple.purity.range.tsv) produced by eggd_cgp-purple. Used only when status=NO_TUMOR to recover the best-fit purity and ploidy from the scored grid."},
+    {"name": "sigs_allocation",  "class": "file",   "label": "*.sig.allocation.tsv from cgp-sigs", "optional": true,
+     "help": "Mutational-signature SNV allocation table (*.sig.allocation.tsv) from cgp-sigs. Optional; drives the LOW_SNV_COUNT flag when total allocated SNVs < 50. Unlinked in eggd_atlas_cnv v0.1."},
+    {"name": "cup_summary",      "class": "file",   "label": "*.cuppa.pred_summ.tsv from cgp-cuppa", "optional": true,
+     "help": "CUPpa tumour-of-origin prediction summary (*.cuppa.pred_summ.tsv) from cgp-cuppa. Optional; top-1 and top-2 predictions are carried through to the QC report. Unlinked in eggd_atlas_cnv v0.1."}
   ],
   "outputSpec": [
     {"name": "qc_report", "class": "file", "label": "*.qc_report.tsv — structured QC summary with flags"}

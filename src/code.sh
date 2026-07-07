@@ -51,9 +51,21 @@ if not rows:
     print("ERROR: purity.tsv has no data row", file=sys.stderr)
     sys.exit(1)
 
+REQUIRED_FIELDS = ['purity', 'ploidy', 'status', 'wholeGenomeDuplication',
+                   'diploidProportion', 'minPurity', 'maxPurity']
+missing = [f for f in REQUIRED_FIELDS if f not in rows[0]]
+if missing:
+    print(f"ERROR: purity.tsv is missing required columns: {missing}", file=sys.stderr)
+    sys.exit(1)
+
 d = rows[0]
-purity  = float(d['purity'])
-ploidy  = float(d['ploidy'])
+try:
+    purity = float(d['purity'])
+    ploidy = float(d['ploidy'])
+except ValueError as e:
+    print(f"ERROR: purity/ploidy is not a valid number in purity.tsv "
+          f"(purity={d['purity']!r}, ploidy={d['ploidy']!r}): {e}", file=sys.stderr)
+    sys.exit(1)
 status  = d['status']
 wgd     = d['wholeGenomeDuplication'].upper() == 'TRUE'
 dip_prop = float(d.get('diploidProportion', 0))
