@@ -227,6 +227,36 @@ class TestErrors:
                 str(tmp_path / 'o.tsv'),
             )
 
+    def test_na_dip_prop_exits(self, tmp_path):
+        pur = tmp_path / 'purity.tsv'
+        pur.write_text(f"{PURITY_HDR}\n0.50\t2.0\tNORMAL\tFALSE\tNA\t0.30\t0.70\n")
+        with pytest.raises(SystemExit):
+            compute_qc_flags(
+                'S', str(pur), make_range_tsv(tmp_path),
+                make_empty_stub(tmp_path, 's.tsv'), make_empty_stub(tmp_path, 'c.tsv'),
+                str(tmp_path / 'o.tsv'),
+            )
+
+    def test_na_min_pur_exits(self, tmp_path):
+        pur = tmp_path / 'purity.tsv'
+        pur.write_text(f"{PURITY_HDR}\n0.50\t2.0\tNORMAL\tFALSE\t0.40\tNA\t0.70\n")
+        with pytest.raises(SystemExit):
+            compute_qc_flags(
+                'S', str(pur), make_range_tsv(tmp_path),
+                make_empty_stub(tmp_path, 's.tsv'), make_empty_stub(tmp_path, 'c.tsv'),
+                str(tmp_path / 'o.tsv'),
+            )
+
+    def test_na_max_pur_exits(self, tmp_path):
+        pur = tmp_path / 'purity.tsv'
+        pur.write_text(f"{PURITY_HDR}\n0.50\t2.0\tNORMAL\tFALSE\t0.40\t0.30\tNA\n")
+        with pytest.raises(SystemExit):
+            compute_qc_flags(
+                'S', str(pur), make_range_tsv(tmp_path),
+                make_empty_stub(tmp_path, 's.tsv'), make_empty_stub(tmp_path, 'c.tsv'),
+                str(tmp_path / 'o.tsv'),
+            )
+
     def test_no_tumor_empty_range_exits(self, tmp_path):
         pur = make_purity_tsv(tmp_path, status='NO_TUMOR', min_pur=0.05, max_pur=0.20)
         empty_range = tmp_path / 'range.tsv'

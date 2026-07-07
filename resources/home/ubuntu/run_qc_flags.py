@@ -66,9 +66,19 @@ def compute_qc_flags(sample_id, purity_file, range_file, sigs_file, cuppa_file, 
 
     status   = d['status']
     wgd      = d['wholeGenomeDuplication'].upper() == 'TRUE'
-    dip_prop = float(d.get('diploidProportion', 0))
-    min_pur  = float(d.get('minPurity', purity))
-    max_pur  = float(d.get('maxPurity', purity))
+    try:
+        dip_prop = float(d.get('diploidProportion', 0))
+        min_pur  = float(d.get('minPurity', purity))
+        max_pur  = float(d.get('maxPurity', purity))
+    except ValueError as e:
+        print(
+            f"ERROR: secondary numeric field is not a valid number in purity.tsv "
+            f"(diploidProportion={d.get('diploidProportion','?')!r}, "
+            f"minPurity={d.get('minPurity','?')!r}, "
+            f"maxPurity={d.get('maxPurity','?')!r}): {e}",
+            file=sys.stderr,
+        )
+        sys.exit(1)
 
     info['purity']   = f"{purity:.3f}"
     info['ploidy']   = f"{ploidy:.3f}"

@@ -16,7 +16,7 @@ Conversion changes only: app metadata and an explicit `timeoutPolicy` (1 h). The
   an inline heredoc into a bundled module (`resources/home/ubuntu/run_qc_flags.py`) to enable
   unit testing; added validation of required purity TSV columns (`REQUIRED_FIELDS` check); added
   `try/except ValueError` guard on purity/ploidy float conversion.
-- `tests/`: added pytest suite (17 tests) covering PASS output, all six flag thresholds,
+- `tests/`: added pytest suite (23 tests) covering PASS output, all six flag thresholds,
   `NO_TUMOR_BESTFIT` best-fit selection, `LOW_SNV_COUNT`, and error-path exits (empty TSV,
   missing columns, NA values, empty range TSV for NO_TUMOR).
 - CI: added `pytest tests/ -v` step.
