@@ -20,3 +20,12 @@ Conversion changes only: app metadata and an explicit `timeoutPolicy` (1 h). The
   `NO_TUMOR_BESTFIT` best-fit selection, `LOW_SNV_COUNT`, and error-path exits (empty TSV,
   missing columns, NA values, empty range TSV for NO_TUMOR).
 - CI: added `pytest tests/ -v` step.
+
+### Post-release fixes (PR #1 CodeRabbit review)
+- CI: added `persist-credentials: false` to the `actions/checkout` step.
+- `resources/home/ubuntu/run_qc_flags.py`: extended numeric validation to the three secondary
+  fields (`diploidProportion`, `minPurity`, `maxPurity`) — each now has a `try/except ValueError`
+  block and a `math.isfinite()` guard consistent with the purity/ploidy pattern. Added `import math`.
+- `tests/`: added `test_na_dip_prop/min_pur/max_pur_exits`, `test_nan_purity_exits`,
+  `test_inf_dip_prop_exits`; suite now **28 tests**.
+- README: added "Flag criteria" table documenting all six flags and their thresholds.
