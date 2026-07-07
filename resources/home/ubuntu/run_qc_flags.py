@@ -7,6 +7,7 @@ The output file is written to <sample_id>.qc_report.tsv in the current directory
 """
 import sys
 import csv
+import math
 
 REQUIRED_FIELDS = [
     'purity', 'ploidy', 'status', 'wholeGenomeDuplication',
@@ -63,6 +64,13 @@ def compute_qc_flags(sample_id, purity_file, range_file, sigs_file, cuppa_file, 
             file=sys.stderr,
         )
         sys.exit(1)
+    if not math.isfinite(purity) or not math.isfinite(ploidy):
+        print(
+            f"ERROR: purity/ploidy is not finite in purity.tsv "
+            f"(purity={d['purity']!r}, ploidy={d['ploidy']!r})",
+            file=sys.stderr,
+        )
+        sys.exit(1)
 
     status   = d['status']
     wgd      = d['wholeGenomeDuplication'].upper() == 'TRUE'
@@ -76,6 +84,15 @@ def compute_qc_flags(sample_id, purity_file, range_file, sigs_file, cuppa_file, 
             f"(diploidProportion={d.get('diploidProportion','?')!r}, "
             f"minPurity={d.get('minPurity','?')!r}, "
             f"maxPurity={d.get('maxPurity','?')!r}): {e}",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    if not all(math.isfinite(v) for v in (dip_prop, min_pur, max_pur)):
+        print(
+            f"ERROR: secondary numeric field is not finite in purity.tsv "
+            f"(diploidProportion={d.get('diploidProportion','?')!r}, "
+            f"minPurity={d.get('minPurity','?')!r}, "
+            f"maxPurity={d.get('maxPurity','?')!r})",
             file=sys.stderr,
         )
         sys.exit(1)

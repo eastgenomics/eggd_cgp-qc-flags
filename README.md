@@ -8,6 +8,17 @@ Reads `*.purple.purity.tsv` (+ `.purple.purity.range.tsv` for `NO_TUMOR`) and em
 `{sample_id}.qc_report.tsv` with flags: `PURITY_FLOOR`, `WGD_SUSPECT`, `FLAT_GENOME`, `WIDE_CI`,
 `NO_TUMOR_BESTFIT`, `LOW_SNV_COUNT`.
 
+## Flag criteria
+
+| Flag | Condition |
+|---|---|
+| `PURITY_FLOOR` | `purity < 0.20` (near noise floor of backbone panel) |
+| `WGD_SUSPECT` | `wholeGenomeDuplication = TRUE` AND `purity < 0.35` (WGD unreliable below ~35 %) |
+| `FLAT_GENOME` | `diploidProportion > 0.85` (weak CN signal; purity anchor uncertain) |
+| `WIDE_CI` | `maxPurity − minPurity > 0.40` (wide confidence interval) |
+| `NO_TUMOR_BESTFIT` | `status = NO_TUMOR` — best-fit purity/ploidy recovered from range TSV |
+| `LOW_SNV_COUNT` | total allocated SNVs (from sigs file) > 0 AND < 50 (SIGS/CUPpa features unreliable) |
+
 ## Inputs
 
 - `sample_id` — sample identifier string (workflow input)
