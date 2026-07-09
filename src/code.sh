@@ -21,13 +21,21 @@ main() {
     echo "====================================================="
 
     echo "[1/4] Downloading inputs..."
-    dx download "${purity_tsv}"       -o purity.tsv
-    dx download "${purity_range_tsv}" -o purity_range.tsv
-
-    # Explicit branches: absent optional inputs are allowed (empty stub), but a FAILED
-    # download of a supplied input must abort under set -e (not fall through to touch).
-    if [[ -n "${sigs_allocation:-}" ]]; then dx download "${sigs_allocation}" -o sigs.tsv; else touch sigs.tsv; fi
-    if [[ -n "${cup_summary:-}" ]]; then dx download "${cup_summary}" -o cuppa.tsv; else touch cuppa.tsv; fi
+    # Download all inputs in parallel; track PIDs so a failed download aborts the job.
+    pids=()
+    dx download "${purity_tsv}"       -o purity.tsv       & pids+=("$!")
+    dx download "${purity_range_tsv}" -o purity_range.tsv & pids+=("$!")
+    if [[ -n "${sigs_allocation:-}" ]]; then
+        dx download "${sigs_allocation}" -o sigs.tsv  & pids+=("$!")
+    else
+        touch sigs.tsv
+    fi
+    if [[ -n "${cup_summary:-}" ]]; then
+        dx download "${cup_summary}" -o cuppa.tsv & pids+=("$!")
+    else
+        touch cuppa.tsv
+    fi
+    for pid in "${pids[@]}"; do wait "$pid"; done
 
     echo "[2/4] Computing QC flags..."
     python3 /home/ubuntu/run_qc_flags.py "${sample_id}" purity.tsv purity_range.tsv sigs.tsv cuppa.tsv
