@@ -31,6 +31,7 @@ Conversion changes only: app metadata and an explicit `timeoutPolicy` (1 h). The
 - README: added "Flag criteria" table documenting all six flags and their thresholds.
 
 ### Post-release fixes (PR #1 nadia31415 review)
-- `src/code.sh`: parallelised `dx download` calls — all four inputs now launched as background
-  processes with explicit PID tracking (`for pid in "${pids[@]}"; do wait "$pid"; done`) so a
-  failed download still aborts the job under `set -euo pipefail`.
+- `src/code.sh`: parallelised `dx download` calls — all configured inputs launched as background
+  processes (absent optional inputs fall back to `touch`); explicit PID tracking
+  (`for pid in "${pids[@]}"; do wait "$pid"; done`) ensures a failed download still aborts the
+  job under `set -euo pipefail`.
