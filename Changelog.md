@@ -29,3 +29,8 @@ Conversion changes only: app metadata and an explicit `timeoutPolicy` (1 h). The
 - `tests/`: added `test_na_dip_prop/min_pur/max_pur_exits`, `test_nan_purity_exits`,
   `test_inf_dip_prop_exits`; suite now **28 tests**.
 - README: added "Flag criteria" table documenting all six flags and their thresholds.
+
+### Post-release fixes (PR #1 nadia31415 review)
+- `src/code.sh`: parallelised `dx download` calls — all four inputs now launched as background
+  processes with explicit PID tracking (`for pid in "${pids[@]}"; do wait "$pid"; done`) so a
+  failed download still aborts the job under `set -euo pipefail`.
